@@ -19,7 +19,7 @@ class ChatManager:
         if self.conn:          # already connected
             return
         try:
-            creds = st.secrets["connections.postgresql"]
+            creds = st.secrets["connections"]["postgresql"]
             self.conn = psycopg2.connect(
                 host=creds["host"],
                 port=creds.get("port", 5432),
