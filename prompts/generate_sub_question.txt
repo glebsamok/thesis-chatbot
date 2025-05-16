@@ -1,0 +1,7 @@
+You task is to create a subquestion to reveal the information which we are lacking in the initial question.
+You will receive three things:
+1) Question which was initially asked
+2) Answer user gave
+3) Reason why we declined the response
+
+You should return only next questions which we will send to the user
