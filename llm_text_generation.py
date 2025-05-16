@@ -1,9 +1,10 @@
 from openai import OpenAI
 from dotenv import load_dotenv
+import streamlit as st
 
-load_dotenv()
+api_key = st.secrets["OPENAI_API_KEY"]
 
-client = OpenAI()
+client = OpenAI(api_key=api_key)
 
 def generate_text_json(messages, model='gpt-4.1', temperature=0.3):
     response = client.chat.completions.create(

@@ -9,14 +9,24 @@ class ChatManager:
         self.cur = None
 
     def connect(self):
-        self.conn = st.connection("postgresql", type="sql")
-        self.cur = self.conn.cursor()
+        print("Connecting to the database...")
+        try:
+            self.conn = st.connection("postgresql", type="sql")
+            self.cur = self.conn.cursor()
+            print("Database connection established.")
+        except Exception as e:
+            print(f"Database connection failed: {e}")
 
     def disconnect(self):
-        if self.cur:
-            self.cur.close()
-        if self.conn:
-            self.conn.close()
+        print("Disconnecting from the database...")
+        try:
+            if self.cur:
+                self.cur.close()
+            if self.conn:
+                self.conn.close()
+            print("Database connection closed.")
+        except Exception as e:
+            print(f"Error during disconnect: {e}")
 
     def get_last_question_id(self, user_id: str) -> int:
         """Get the last answered question_id for a user. Returns 0 if none answered yet."""
@@ -202,39 +212,36 @@ class ChatManager:
             result = self.cur.fetchone()
             self.disconnect()
             if not result:
-                print(f"[ERROR] No main question found for question_id {main_question_id}")
+                print(f"No main question found for question_id {main_question_id}")
                 return False, "No current question found", None, None, None, None, None
             question_text, acceptance_criteria, current_state, max_depth = result
             question = Question(question_text, acceptance_criteria)
         else:
             question, question_id, current_state = self.get_next_unanswered_question(user_id)
             if not question:
-                print("[INFO] No current question to answer.")
+                print("No current question to answer.")
                 return False, "No current question found", None, None, None, None, None
             self.connect()
             self.cur.execute("SELECT max_depth FROM questions_and_acceptance WHERE question_id = %s", (question_id,))
             max_depth = self.cur.fetchone()[0]
             self.disconnect()
 
-        # subquestion_depth is the depth of the answer being processed
         is_accepted, follow_up, _ = self.process_answer(user_id, question_id, answer, current_state, subquestion_depth)
         reactions = question.generate_answer_reactions(answer)
 
-        # Only allow a follow-up if the next subquestion_depth (current+1) <= max_depth
         if follow_up and (subquestion_depth + 1) <= max_depth:
             follow_up_question = Question(follow_up, question.acceptance_criteria)
-            print(f"[INFO] Asking follow-up for question_id {question_id} (depth {subquestion_depth + 1})")
+            print(f"Asking follow-up for question_id {question_id} (depth {subquestion_depth + 1})")
             return is_accepted, reactions, follow_up_question, None, question_id, subquestion_depth + 1, main_question_id or question_id
-        # If max_depth reached or no follow_up, move to next main question
         next_question, next_question_id, next_state = self.get_next_unanswered_question(user_id)
         state_intro = self.get_state_intro(next_state) if next_state and next_state != current_state else None
         if next_question:
             if state_intro:
                 next_question.question = f"{state_intro}\n\n{next_question.question}"
-            print(f"[INFO] Moving to next main question_id {next_question_id}")
+            print(f"Moving to next main question_id {next_question_id}")
             return is_accepted, reactions, next_question, next_question_id, next_state, 0, None
         else:
-            print("[INFO] Interview complete for user.")
+            print("Interview complete for user.")
             return is_accepted, reactions, None, None, next_state, 0, None
 
     def start_conversation(self, user_id: str) -> tuple:
