@@ -23,8 +23,8 @@ class ChatManager:
             self.conn = psycopg2.connect(
                 host=creds["host"],
                 port=creds.get("port", 5432),
-                dbname=creds["database"],
-                user=creds["username"],
+                dbname=creds["dbname"],
+                user=creds["user"],
                 password=creds["password"],
             )
             self.cur = self.conn.cursor()
