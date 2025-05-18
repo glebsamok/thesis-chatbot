@@ -312,7 +312,7 @@ class ChatManager:
         is_accepted, follow_up, _ = self.process_answer(
             user_id, question_id, answer, current_state, subquestion_depth
         )
-        reactions = question.generate_answer_reactions(answer)
+        reactions = question.generate_answer_reactions(answer, user_id)
 
         if follow_up and (subquestion_depth + 1) <= max_depth:
             follow_up_question = Question(follow_up, question.acceptance_criteria)
