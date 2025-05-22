@@ -45,7 +45,7 @@ def get_chat_history_text():
 
 # Set page config
 st.set_page_config(
-    page_title="LLM Interview Assistant",
+    page_title="Work situations interview",
     page_icon="🤖",
     layout="wide"
 )
@@ -85,7 +85,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title
-st.title("🤖 LLM Interview Assistant")
+st.title("🤖 Work situations interview")
 
 # Welcome message for new sessions
 if not st.session_state.chat_history:
