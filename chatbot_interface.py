@@ -92,7 +92,7 @@ if not st.session_state.chat_history:
     st.markdown(
         """
         <div style='margin-bottom: 1.5rem; font-size: 1.1rem;'>
-        Welcome! This assistant will guide you through a reflective interview. Your responses are private and help you think deeper about your experiences. Type your answer below to begin!
+        This AI-supported interviewer will help you think deeper about work situations. Your responses are private and not used outside of the scope of this study. Please type your answer below to begin.
         </div>
         """,
         unsafe_allow_html=True
