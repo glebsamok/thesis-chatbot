@@ -85,18 +85,18 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title
-st.title("🤖 Work situations interview")
+st.title("🤖 xSurvey Demo Chatbot")
 
 # Welcome message for new sessions
-if not st.session_state.chat_history:
-    st.markdown(
-        """
-        <div style='margin-bottom: 1.5rem; font-size: 1.1rem;'>
-        This AI-supported interviewer will help you think deeper about work situations. Your responses are private and not used outside of the scope of this study. Please type your answer below to begin.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+# if not st.session_state.chat_history:
+#     st.markdown(
+#         """
+#         <div style='margin-bottom: 1.5rem; font-size: 1.1rem;'>
+#         This AI-supported interviewer will help you think deeper about work situations. Your responses are private and not used outside of the scope of this study. Please type your answer below to begin.
+#         </div>
+#         """,
+#         unsafe_allow_html=True
+#     )
 
 # Initialize chat if not started
 if not st.session_state.current_question:
