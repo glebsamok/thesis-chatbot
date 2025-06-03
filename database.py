@@ -6,6 +6,34 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+def drop_tables():
+    db_params = {
+        'dbname': os.getenv('PG_NAME', 'pgvector'),
+        'user': os.getenv('PG_USER', 'gleb'),
+        'password': os.getenv('PG_PASS', '1234'),
+        'host': os.getenv('PG_HOST', 'localhost'),
+        'port': os.getenv('PG_PORT', '5433')
+    }
+
+    try:
+        conn = psycopg2.connect(**db_params)
+        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        cur = conn.cursor()
+
+        # Drop only the results table
+        cur.execute("""
+            DROP TABLE IF EXISTS results CASCADE;
+        """)
+        
+        print("Results table dropped successfully")
+    except Exception as e:
+        print(f"Error dropping results table: {e}")
+    finally:
+        if 'cur' in locals():
+            cur.close()
+        if 'conn' in locals():
+            conn.close()
+
 def init_database():
     # Database connection parameters
     db_params = {
@@ -39,7 +67,7 @@ def init_database():
                 answer_id UUID PRIMARY KEY,
                 answer_content TEXT NOT NULL,
                 related_question_id INTEGER NOT NULL,
-                user_id UUID NOT NULL,
+                user_id TEXT NOT NULL,
                 state INTEGER NOT NULL,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (related_question_id) REFERENCES questions_and_acceptance(question_id)
@@ -54,11 +82,10 @@ def init_database():
                 intro_message TEXT NOT NULL
             );
         """)
-
-        print("Database tables created successfully!")
         
+        print("Tables created successfully")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error creating tables: {e}")
     finally:
         if 'cur' in locals():
             cur.close()
@@ -66,4 +93,5 @@ def init_database():
             conn.close()
 
 if __name__ == "__main__":
-    init_database()
+    # drop_tables()  # First drop existing tables
+    init_database()  # Then create new tables with updated schema
