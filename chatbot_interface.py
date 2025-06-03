@@ -5,11 +5,12 @@ from datetime import datetime
 
 # Initialize session state
 if 'user_id' not in st.session_state:
-    # Try to get user_id from URL query parameters
+    # Get user_id from URL query parameters
     if 'user_id' in st.query_params:
         st.session_state.user_id = st.query_params['user_id']
     else:
         st.session_state.user_id = str(uuid.uuid4())
+
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 if 'current_question' not in st.session_state:
@@ -145,7 +146,7 @@ if prompt := st.chat_input("Type your answer here..."):
         st.session_state.subquestion_depth = next_subquestion_depth
         add_to_history("assistant", next_question.question)
         with st.chat_message("assistant"):
-            st.write(f"{next_question.question} + {st.query_params['user_id']}")
+            st.write(f"{next_question.question}")
     # Handle next main question
     elif next_question:
         st.session_state.current_question = next_question
@@ -167,7 +168,10 @@ if prompt := st.chat_input("Type your answer here..."):
 with st.sidebar:
     st.markdown("---")
     if st.button("Start New Session"):
-        st.session_state.user_id = str(uuid.uuid4())
+        if 'user_id' in st.query_params:
+            st.session_state.user_id = st.query_params['user_id']  # Keep the same user_id from URL
+        else:
+            st.session_state.user_id = str(uuid.uuid4())
         st.session_state.chat_history = []
         st.session_state.current_question = None
         st.session_state.current_question_id = None
