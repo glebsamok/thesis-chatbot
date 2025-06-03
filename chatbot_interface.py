@@ -7,7 +7,7 @@ from datetime import datetime
 if 'user_id' not in st.session_state:
     # Try to get user_id from URL query parameters
     if 'user_id' in st.query_params:
-        st.session_state.user_id = st.experimental_get_query_params['user_id']
+        st.session_state.user_id = st.query_params['user_id']
     else:
         st.session_state.user_id = str(uuid.uuid4())
 if 'chat_history' not in st.session_state:
