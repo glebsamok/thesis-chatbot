@@ -4,7 +4,9 @@ import psycopg2
 import uuid
 from typing import Optional, Tuple
 from question_init import Question
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 class ChatManager:
     def __init__(self):
@@ -20,6 +22,14 @@ class ChatManager:
             return
         try:
             creds = st.secrets["postgres"]
+            # creds = {
+            #     "host": os.getenv("PG_HOST"),
+            #     "port": os.getenv("PG_PORT"),
+            #     "dbname": os.getenv("PG_NAME"),
+            #     "user": os.getenv("PG_USER"),
+            #     "password": os.getenv("PG_PASS")
+            # }
+            print(f"Connecting to database with params: {creds}")
             self.conn = psycopg2.connect(
                 host=creds["host"],
                 port=creds.get("port", 5432),
@@ -157,6 +167,8 @@ class ChatManager:
     ) -> Tuple[bool, Optional[str], Optional[int]]:
         try:
             self.connect()
+            print(f"Processing answer for user_id: {user_id}, question_id: {question_id}")
+            
             # Fetch question
             self.cur.execute(
                 """
@@ -168,6 +180,7 @@ class ChatManager:
             )
             result = self.cur.fetchone()
             if not result:
+                print(f"No question found for question_id: {question_id}")
                 return False, None, None
             question, acceptance_criteria, question_state = result
             question_obj = Question(question, acceptance_criteria)
@@ -175,40 +188,50 @@ class ChatManager:
             is_accepted, follow_up = question_obj.acceptance_check(answer)
 
             # Store answer
-            self.cur.execute(
-                """
-                INSERT INTO results (
-                    answer_id,
-                    answer_content,
-                    related_question_id,
-                    user_id,
-                    state,
-                    subquestion_depth
-                )
-                VALUES (%s, %s, %s, %s, %s, %s)
-                """,
-                (
-                    str(uuid.uuid4()),
-                    answer,
-                    question_id,
-                    user_id,
-                    state,
-                    subquestion_depth,
-                ),
-            )
-
-            if is_accepted:
+            try:
                 self.cur.execute(
                     """
-                    UPDATE results
-                    SET state = %s
-                    WHERE user_id = %s
-                      AND created_at = (
-                          SELECT MAX(created_at) FROM results WHERE user_id = %s
-                      )
+                    INSERT INTO results (
+                        answer_id,
+                        answer_content,
+                        related_question_id,
+                        user_id,
+                        state,
+                        subquestion_depth
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s)
                     """,
-                    (question_state, user_id, user_id),
+                    (
+                        str(uuid.uuid4()),
+                        answer,
+                        question_id,
+                        user_id,
+                        state,
+                        subquestion_depth,
+                    ),
                 )
+                print(f"Successfully inserted answer for user_id: {user_id}")
+            except Exception as e:
+                print(f"Error inserting answer: {e}")
+                raise
+
+            if is_accepted:
+                try:
+                    self.cur.execute(
+                        """
+                        UPDATE results
+                        SET state = %s
+                        WHERE user_id = %s
+                          AND created_at = (
+                              SELECT MAX(created_at) FROM results WHERE user_id = %s
+                          )
+                        """,
+                        (question_state, user_id, user_id),
+                    )
+                    print(f"Successfully updated state for user_id: {user_id}")
+                except Exception as e:
+                    print(f"Error updating state: {e}")
+                    raise
 
             self.conn.commit()
             return is_accepted, follow_up, question_state if is_accepted else state

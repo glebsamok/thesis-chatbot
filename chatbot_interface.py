@@ -10,6 +10,7 @@ if 'user_id' not in st.session_state:
         st.session_state.user_id = st.query_params['user_id']  # Store the exact user_id from URL
     else:
         st.session_state.user_id = str(uuid.uuid4())  # Generate random UUID only if no user_id in URL
+    # print(f"User ID: {st.session_state.user_id}")
 
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
