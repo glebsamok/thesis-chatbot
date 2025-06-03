@@ -145,7 +145,7 @@ if prompt := st.chat_input("Type your answer here..."):
         st.session_state.subquestion_depth = next_subquestion_depth
         add_to_history("assistant", next_question.question)
         with st.chat_message("assistant"):
-            st.write(next_question.question)
+            st.write(f"{next_question.question} + {st.query_params['user_id']}")
     # Handle next main question
     elif next_question:
         st.session_state.current_question = next_question
